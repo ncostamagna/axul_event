@@ -9,11 +9,11 @@ services:
             - "8081:8081"
         environment:
             - APP_PORT=8081
-            - DATABASE_HOST=axul-dev.cb1inrror0lv.us-east-1.rds.amazonaws.com
+            - DATABASE_HOST=
             - DATABASE_PORT=3306
             - DATABASE_NAME=axul_event
             - DATABASE_USER=root
-            - DATABASE_PASSWORD=Axul1989
+            - DATABASE_PASSWORD=
             - DATABASE_DEBUG=true
         logging:
             driver: "json-file"
