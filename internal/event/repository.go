@@ -36,6 +36,11 @@ func (r *repo) GetAll(ctx context.Context, filters Filters, offset, limit int) (
 		second := first.AddDate(0, 0, int(filters.Days)).Add(time.Hour * 20)
 		tx = tx.Order("date").Where("DATE_FORMAT(date,'%Y%m%d') between DATE_FORMAT(?,'%Y%m%d') and DATE_FORMAT(?,'%Y%m%d')", first, second)
 	}
+
+	if !filters.Expired {
+		tx = tx.Order("date").Where("DATE_FORMAT(date,'%Y%m%d') >= DATE_FORMAT(CURDATE(),'%Y%m%d')")
+	}
+
 	result := tx.Order("created_at desc").Find(&events)
 
 	for i := range events {

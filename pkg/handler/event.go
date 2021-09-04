@@ -54,9 +54,10 @@ func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error)
 func decodeGetAllHandler(_ context.Context, r *http.Request) (interface{}, error) {
 	v := r.URL.Query()
 	d, _ := strconv.ParseInt(v.Get("days"), 0, 64)
-
+	e, _ := strconv.ParseInt(v.Get("expired"), 0, 64)
 	req := event.GetAllReq{
-		Days: d,
+		Days:    d,
+		Expired: int16(e),
 	}
 
 	return req, nil

@@ -11,9 +11,10 @@ import (
 )
 
 type Filters struct {
-	ID     []string
-	UserId []string
-	Days   int64
+	ID      []string
+	UserId  []string
+	Expired bool
+	Days    int64
 }
 
 type Service interface {

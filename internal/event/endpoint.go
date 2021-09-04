@@ -19,6 +19,7 @@ type (
 		ID      []string `json:"id"`
 		UserID  []string `json:"user_id"`
 		Days    int64    `json:"days"`
+		Expired int16    `json:"expired"`
 		Preload string   `json:"preload"`
 		Limit   int      `json:"limit"`
 		Page    int      `json:"page"`
@@ -63,7 +64,9 @@ func makeGetAllEndpoint(service Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetAllReq)
 		filters := Filters{ID: req.ID, Days: req.Days}
-
+		if req.Expired > 0 {
+			filters.Expired = true
+		}
 		events, err := service.GetAll(ctx, filters, 0, 0, req.Preload)
 		if err != nil {
 			return nil, response.BadRequest(err.Error())
