@@ -116,6 +116,7 @@ func (s *service) authorization(ctx context.Context, id, token string) error {
 	a, err := s.userTran.GetAuth(id, token)
 
 	if err != nil {
+		fmt.Println(err)
 		return errors.New("invalid authentication")
 	}
 
