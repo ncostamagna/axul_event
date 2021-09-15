@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/digitalhouse-dev/dh-kit/logger"
+	"github.com/ncostamagna/axul_event/pkg/client"
 	"strconv"
 	"strings"
 	"time"
@@ -23,18 +24,21 @@ type Service interface {
 	Create(ctx context.Context, userID, title, description, date, time string) (*Event, error)
 	Update(ctx context.Context, id string) error
 	Delete(ctx context.Context, id string) error
+	authorization(ctx context.Context, id, token string) error
 }
 
 type service struct {
-	repo   Repository
-	logger logger.Logger
+	repo     Repository
+	userTran client.Transport
+	logger   logger.Logger
 }
 
 //NewService is a service handler
-func NewService(repo Repository, logger logger.Logger) Service {
+func NewService(repo Repository, userTran client.Transport, logger logger.Logger) Service {
 	return &service{
-		repo:   repo,
-		logger: logger,
+		repo:     repo,
+		userTran: userTran,
+		logger:   logger,
 	}
 }
 
@@ -105,5 +109,19 @@ func (s *service) Update(ctx context.Context, id string) error {
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {
+	return nil
+}
+
+func (s *service) authorization(ctx context.Context, id, token string) error {
+	a, err := s.userTran.GetAuth(id, token)
+
+	if err != nil {
+		return errors.New("invalid authentication")
+	}
+
+	if a < 1 {
+		return errors.New("invalid authorization")
+	}
+
 	return nil
 }

@@ -48,6 +48,9 @@ func decodeStoreHandler(_ context.Context, r *http.Request) (interface{}, error)
 		return nil, err
 	}
 
+	req.Auth.ID = r.Header.Get("id")
+	req.Auth.Token = r.Header.Get("token")
+
 	return req, nil
 }
 
@@ -59,6 +62,9 @@ func decodeGetAllHandler(_ context.Context, r *http.Request) (interface{}, error
 		Days:    d,
 		Expired: int16(e),
 	}
+
+	req.Auth.ID = r.Header.Get("id")
+	req.Auth.Token = r.Header.Get("token")
 
 	return req, nil
 }

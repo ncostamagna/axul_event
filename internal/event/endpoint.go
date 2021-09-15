@@ -2,12 +2,12 @@ package event
 
 import (
 	"context"
-	"fmt"
 	"github.com/digitalhouse-dev/dh-kit/response"
 )
 
 type (
 	StoreReq struct {
+		Auth        Authentication
 		UserID      string `json:"user_id"`
 		Title       string `json:"title"`
 		Description string `json:"description"`
@@ -16,6 +16,7 @@ type (
 	}
 
 	GetAllReq struct {
+		Auth    Authentication
 		ID      []string `json:"id"`
 		UserID  []string `json:"user_id"`
 		Days    int64    `json:"days"`
@@ -26,8 +27,14 @@ type (
 	}
 
 	GetReq struct {
+		Auth    Authentication
 		ID      string `json:"id"`
 		Preload string `json:"preload"`
+	}
+
+	Authentication struct {
+		ID    string
+		Token string
 	}
 )
 
@@ -63,13 +70,18 @@ func makeGetEndpoint(service Service) Controller {
 func makeGetAllEndpoint(service Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetAllReq)
+
+		if err := service.authorization(ctx, req.Auth.ID, req.Auth.Token); err != nil {
+			return response.BadRequest(err.Error()), nil
+		}
+
 		filters := Filters{ID: req.ID, Days: req.Days}
 		if req.Expired > 0 {
 			filters.Expired = true
 		}
 		events, err := service.GetAll(ctx, filters, 0, 0, req.Preload)
 		if err != nil {
-			return nil, response.BadRequest(err.Error())
+			return response.BadRequest(err.Error()), nil
 		}
 
 		return response.Success("", events, nil, nil), nil
@@ -79,7 +91,11 @@ func makeGetAllEndpoint(service Service) Controller {
 func makeStoreEndpoint(service Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(StoreReq)
-		fmt.Println(req)
+
+		if err := service.authorization(ctx, req.Auth.ID, req.Auth.Token); err != nil {
+			return response.BadRequest(err.Error()), nil
+		}
+
 		event, err := service.Create(ctx, req.UserID, req.Title, req.Description, req.Date, req.Time)
 		if err != nil {
 			return nil, response.BadRequest(err.Error())

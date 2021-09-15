@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/digitalhouse-dev/dh-kit/logger"
 	"github.com/ncostamagna/axul_event/internal/event"
+	"github.com/ncostamagna/axul_event/pkg/client"
 	"github.com/ncostamagna/axul_event/pkg/handler"
 
 	"github.com/joho/godotenv"
@@ -11,15 +12,14 @@ import (
 	"flag"
 	"fmt"
 
-
 	"net/http"
 
 	"os"
 	"os/signal"
 	"syscall"
 
-	"gorm.io/gorm"
 	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -27,7 +27,6 @@ func main() {
 	fmt.Println("Initial")
 	var log = logger.New(logger.LogOption{Debug: true})
 	_ = godotenv.Overload()
-
 
 	var httpAddr = flag.String("http", ":"+os.Getenv("APP_PORT"), "http listen address")
 
@@ -52,15 +51,14 @@ func main() {
 		_ = log.CatchError(err)
 	}
 
-
-
 	flag.Parse()
 	ctx := context.Background()
 
 	var srv event.Service
 	{
+		userTran := client.NewClient(os.Getenv("USER_GRPC_URL"), "", client.GRPC)
 		repository := event.NewRepository(db, log)
-		srv = event.NewService(repository, log)
+		srv = event.NewService(repository, userTran, log)
 	}
 
 	errs := make(chan error)
