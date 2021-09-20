@@ -54,6 +54,7 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 
+	fmt.Println(os.Getenv("USER_GRPC_URL"))
 	var srv event.Service
 	{
 		userTran := client.NewClient(os.Getenv("USER_GRPC_URL"), "", client.GRPC)

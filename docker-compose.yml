@@ -1,7 +1,7 @@
 version: "3.5"
 services:
-    mysql:
-        container_name: axul_event
+    axul_event:
+        image: ncostamagna/axul_event:v1.0.0
         build:
             context: .
             dockerfile: Dockerfile

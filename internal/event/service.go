@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/digitalhouse-dev/dh-kit/logger"
-	"github.com/ncostamagna/axul_event/pkg/client"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/digitalhouse-dev/dh-kit/logger"
+	"github.com/ncostamagna/axul_event/pkg/client"
 )
 
 type Filters struct {
