@@ -11,8 +11,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
-
 	"net/http"
+
+	"github.com/rs/cors"
 
 	"os"
 	"os/signal"
@@ -28,7 +29,7 @@ func main() {
 	var log = logger.New(logger.LogOption{Debug: true})
 	_ = godotenv.Overload()
 
-	var httpAddr = flag.String("http", ":"+os.Getenv("APP_PORT"), "http listen address")
+	var httpAddr = flag.String("http", ":5000", "http listen address")
 
 	fmt.Println("DataBases")
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -39,7 +40,7 @@ func main() {
 		os.Getenv("DATABASE_NAME"))
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		_ = log.CatchError(err)
+		_ = log.CatchError(fmt.Errorf("%s err: %v", dsn, err))
 		os.Exit(-1)
 	}
 	if os.Getenv("DATABASE_DEBUG") == "true" {
@@ -71,10 +72,9 @@ func main() {
 	}()
 
 	mux := http.NewServeMux()
+	mux.Handle("/", handler.NewHTTPServer(ctx, event.MakeEndpoints(srv)))
 
-	mux.Handle("/events", handler.NewHTTPServer(ctx, event.MakeEndpoints(srv)))
-
-	http.Handle("/", accessControl(mux))
+	http.Handle("/", cors.AllowAll().Handler(accessControl(mux)))
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
@@ -91,8 +91,8 @@ func main() {
 func accessControl(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With")
 
 		if r.Method == "OPTIONS" {
 			return
